@@ -7,34 +7,35 @@ const { Product, Category, Tag, ProductTag } = require('../../models');
 router.get('/', (req, res) => {
   // find all products
   // be sure to include its associated Category and Tag data
-  Product.findAll().then((productData) => {
+  Product.findAll({include:[Category, Tag]}).then((productData) => {
     res.json(productData);
   });
 });
 
 // get one product
-router.get('/:product_id', (req, res) => {
+router.get('/:id', (req, res) => {
   // find a single product by its `id`
   // be sure to include its associated Category and Tag data
-  Category.findByPk(req.params.id).then((categoryData) => {
+  Product.findByPk(req.params.id, {include: Category, Tag}).then((categoryData) => {
     res.json(categoryData);
   });
 });
 
 // create new product
 router.post('/', (req, res) => {
-  Category.create({
-    product_name: req.body.product_name,
-    price: req.body.price,
-    stock: req.body.stock,
-  })
-    .then((newCategory) => {
-      // Send the newly created row as a JSON object
-      res.json(newCategory);
-    })
-    .catch((err) => {
-      res.json(err);
-    });
+  // Product.create({
+  //   product_name: req.body.product_name,
+  //   price: req.body.price,
+  //   stock: req.body.stock,
+  //   product_id: req.body.product_id
+  // })
+  //   .then((newProduct) => {
+  //     // Send the newly created row as a JSON object
+  //     res.json(newProduct);
+  //   })
+  //   .catch((err) => {
+  //     res.json(err);
+  //   });
   /* req.body should look like this...
     {
       product_name: "Basketball",
@@ -43,7 +44,12 @@ router.post('/', (req, res) => {
       tagIds: [1, 2, 3, 4]
     }
   */
-  Product.create(req.body)
+  Product.create({
+    product_name: req.body.product_name,
+    price: req.body.price,
+    stock: req.body.stock,
+    tagIds: [1, 2, 3, 4]
+  })
     .then((product) => {
       // if there's product tags, we need to create pairings to bulk create in the ProductTag model
       if (req.body.tagIds.length) {
@@ -66,7 +72,7 @@ router.post('/', (req, res) => {
 });
 
 // update product
-router.put('/:product_id', (req, res) => {
+router.put('/:id', (req, res) => {
   // update product data
   Product.update(req.body, {
     where: {
@@ -107,15 +113,15 @@ router.put('/:product_id', (req, res) => {
     });
 });
 
-router.delete('/:product_id', (req, res) => {
+router.delete('/:id', (req, res) => {
   // delete one product by its `id` value
   Product.destroy({
     where: {
-      product_id: req.params.product_id,
+      id: req.params.id,
     },
   })
-    .then((deletedCategory) => {
-      res.json(deletedCategory);
+    .then((deletedProduct) => {
+      res.json(deletedProduct);
     })
     .catch((err) => res.json(err));
 });
